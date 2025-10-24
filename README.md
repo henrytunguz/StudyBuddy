@@ -1,73 +1,250 @@
-# React + TypeScript + Vite
+# AI Study Buddy
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An interactive learning application that provides step-by-step problem solving with AI assistance and practice quizzes.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 📚 **Step-by-Step Learning**: Break down complex problems into manageable steps
+- ✅ **Real-time Verification**: Get instant feedback on your answers
+- 🎯 **Practice Quizzes**: Reinforce learning with topic-based quizzes
+- 🎓 **Adaptive Difficulty**: Choose from Beginner, Intermediate, or Expert levels
+- 🤖 **AI-Powered**: Uses Ollama for intelligent problem solving and question generation
 
-## React Compiler
+## Project Structure
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+src/
+├── App.tsx                 # Main application component
+├── App.css                 # Styles
+├── types.ts                # TypeScript type definitions
+├── connection.ts           # Ollama API connection
+├── components/
+│   ├── Header.tsx          # App header with navigation and score
+│   ├── HomeScreen.tsx      # Initial question input screen
+│   ├── ProblemScreen.tsx   # Step-by-step problem solving interface
+│   └── QuizScreen.tsx      # Quiz practice interface
+└── hooks/
+    ├── useAppState.ts      # Global app state management
+    ├── useProblemLogic.ts  # Problem generation and verification logic
+    └── useQuizLogic.ts     # Quiz generation and scoring logic
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## File Descriptions
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Core Files
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+**`App.tsx`**
+- Main application orchestrator
+- Manages routing between home, problem, and quiz modes
+- Connects hooks and components together
+
+**`types.ts`**
+- TypeScript interfaces for QuizData, Step, and ProblemState
+- Type definitions for app modes and quiz levels
+
+**`connection.ts`** (not included, must be created)
+- `callOllamaModel(prompt: string)` - Connects to Ollama API
+- Returns AI-generated responses as strings
+
+### Components
+
+**`Header.tsx`**
+- Displays app branding and navigation
+- Shows quiz score when in quiz mode
+- Back button for navigation
+
+**`HomeScreen.tsx`**
+- Initial landing screen
+- Text area for user to input questions
+- Triggers step-by-step problem generation
+
+**`ProblemScreen.tsx`**
+- Displays original question and current step
+- Input field for user answers
+- Real-time feedback on answer correctness
+- Progress indicator (Step X of Y)
+
+**`QuizScreen.tsx`**
+- Multiple choice quiz interface
+- Shows correct/incorrect answers with visual feedback
+- Difficulty level selector
+- Next question and skip buttons
+
+### Hooks
+
+**`useAppState.ts`**
+- Manages all global state (questions, problems, quiz data)
+- Returns state and setter functions for components
+
+**`useProblemLogic.ts`**
+- `generateSteps(userQuestion)` - Generates step-by-step solution
+- `verifyStepAnswer(appState)` - Verifies user's answer for current step
+- `parseSteps(response)` - Parses AI response into step objects
+
+**`useQuizLogic.ts`**
+- `generateQuizQuestion()` - Creates new quiz questions
+- `handleAnswerClick(index)` - Processes answer selection
+- `handleNextQuestion()` - Loads next question
+- `startQuiz()` - Initializes quiz session
+- Manages scoring and question history
+
+## Setup
+
+### Prerequisites
+
+- Node.js and npm/yarn installed
+- [Ollama](https://ollama.ai) installed and running locally
+- An Ollama model pulled (e.g., `llama2`, `mistral`)
+
+### Installation
+
+1. Clone the repository
+```bash
+git clone <repository-url>
+cd ai-study-buddy
 ```
+
+2. Install dependencies
+```bash
+npm install
+```
+
+3. Create `src/connection.ts`:
+```typescript
+export async function callOllamaModel(prompt: string): Promise<string> {
+    const response = await fetch('http://localhost:11434/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            model: 'llama2', // or your preferred model
+            prompt: prompt,
+            stream: false
+        })
+    });
+    
+    const data = await response.json();
+    return data.response;
+}
+```
+
+4. Start the development server
+```bash
+npm run dev
+```
+
+5. Ensure Ollama is running
+```bash
+ollama serve
+```
+
+## Usage
+
+### Step-by-Step Learning
+
+1. Enter a question (e.g., "How do I solve 2x + 5 = 15?")
+2. Click "Get Step-by-Step Help"
+3. Complete each step by entering your answer
+4. Get instant feedback on correctness
+5. Move through steps until problem is solved
+
+### Practice Quiz
+
+1. After completing a problem, click "Practice with Quiz"
+2. Answer multiple choice questions on the same topic
+3. Select difficulty level (Beginner/Intermediate/Expert)
+4. Track your score
+5. Click "Next Question" to continue practicing
+
+## AI Response Format
+
+The app expects specific formats from the AI:
+
+### Problem Steps Format
+```
+TOPIC: [subject area]
+STEP1: [instruction for step 1]
+STEP2: [instruction for step 2]
+STEP3: [instruction for step 3]
+FINAL_ANSWER: [complete solution]
+```
+
+### Step Verification Format
+```
+CORRECT: [yes or no]
+EXPLANATION: [brief explanation]
+```
+
+### Quiz Question Format
+```
+QUESTION: [question text]
+CORRECT: [correct answer]
+WRONG1: [wrong answer 1]
+WRONG2: [wrong answer 2]
+WRONG3: [wrong answer 3]
+```
+
+## Development Notes
+
+### Parsing Logic
+
+The `parseSteps` function in `useProblemLogic.ts` extracts steps from AI responses:
+- Looks for `STEP#:` markers
+- Extracts text between each step marker
+- Handles flexible AI output format
+- Stops at `FINAL_ANSWER:` marker
+
+### State Management
+
+- `useAppState` - Centralized state for all screens
+- `useProblemLogic` - Problem-specific logic and AI calls
+- `useQuizLogic` - Quiz-specific logic and scoring
+- Hooks passed to components via props for separation of concerns
+
+### Component Communication
+
+```
+App.tsx (orchestrator)
+  ├─> Header (navigation/score)
+  ├─> HomeScreen (question input)
+  ├─> ProblemScreen (step solving)
+  └─> QuizScreen (practice)
+       ↑
+       │
+    Hooks provide state + logic
+       │
+       ↓
+  useAppState, useProblemLogic, useQuizLogic
+```
+
+## Troubleshooting
+
+**"Failed to generate problem steps"**
+- Ensure Ollama is running (`ollama serve`)
+- Check that a model is pulled (`ollama pull llama2`)
+- Verify connection.ts is configured correctly
+
+**Steps not parsing correctly**
+- Check console for "Raw response:" output
+- Verify AI is following expected format
+- Adjust prompts in hooks if needed
+
+**Quiz not generating**
+- Same as problem steps troubleshooting
+- Check network tab for API errors
+
+## Future Enhancements
+
+- [ ] Save progress locally
+- [ ] Multiple AI model support
+- [ ] Custom difficulty levels
+- [ ] Problem history
+- [ ] Export solved problems as notes
+- [ ] Collaborative learning mode
+
+## License
+
+MIT
+
+## Contributing
+
+Pull requests welcome! Please ensure code follows the existing structure and includes TypeScript types.
