@@ -66,7 +66,7 @@ Include 3-5 steps. Be specific about what the student should calculate or determ
         }
     };
 
-    const verifyStepAnswer = async (appState: any, _setMode: any) => {
+    const verifyStepAnswer = async (appState: any) => {
         if (!appState.problem || appState.problem.currentStepIndex >= appState.problem.steps.length) return;
 
         appState.setLoading(true);
