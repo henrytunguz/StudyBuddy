@@ -94,13 +94,13 @@ src/
 
 - Node.js and npm/yarn installed
 - [Ollama](https://ollama.ai) installed and running locally
-- An Ollama model pulled (e.g., `llama2`, `mistral`)
+- An Ollama model pulled ( I reccomend a small model like `gemma3:1-4b`)
 
 ### Installation
 
 1. Clone the repository
 ```bash
-git clone <repository-url>
+git clone https://github.com/henrytunguz/StudyBuddy
 cd ai-study-buddy
 ```
 
@@ -110,13 +110,14 @@ npm install
 ```
 
 3. Create `src/connection.ts`:
+(Edit to configure to your computer)
 ```typescript
 export async function callOllamaModel(prompt: string): Promise<string> {
     const response = await fetch('http://localhost:11434/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            model: 'llama2', // or your preferred model
+            model: 'gemma3:1b', // or your preferred model
             prompt: prompt,
             stream: false
         })
@@ -138,6 +139,10 @@ ollama serve
 ```
 
 ## Usage
+
+1. Go to your preferred web browser: eg: `Google Chrome`
+
+2. open `localhost:5173`
 
 ### Step-by-Step Learning
 
@@ -220,7 +225,7 @@ App.tsx (orchestrator)
 
 **"Failed to generate problem steps"**
 - Ensure Ollama is running (`ollama serve`)
-- Check that a model is pulled (`ollama pull llama2`)
+- Check that a model is pulled (`ollama pull gemma3:1b`)
 - Verify connection.ts is configured correctly
 
 **Steps not parsing correctly**
@@ -244,6 +249,17 @@ App.tsx (orchestrator)
 ## License
 
 MIT
+
+## Install Ollama
+
+1. With Brew
+``` bash
+brew install ollama
+```
+ 2. With cURL
+ ``` bash
+     curl -fsSL https://ollama.com/install.sh | sh
+```
 
 ## Contributing
 
